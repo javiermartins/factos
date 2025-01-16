@@ -1,0 +1,28 @@
+---
+const { currentDate } = Astro.props;
+
+const abbreviatedMonths = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+
+let date = new Date(currentDate);
+let day = date.getDate();
+let abbreviatedMonth = abbreviatedMonths[date.getMonth()];
+let year = date.getFullYear();
+let formattedDate = `${day} ${abbreviatedMonth}, ${year}`;
+---
+
+<>
+  {formattedDate}
+</>

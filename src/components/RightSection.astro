@@ -1,0 +1,50 @@
+---
+import { getData } from "../../db/client";
+import FormattedDate from "./FormattedDate.astro";
+import Ray from "./icons/Ray.astro";
+import Book from "./icons/Book.astro";
+
+const date = new Date();
+const currentDate = date.toISOString().split("T")[0];
+
+const data = await getData(currentDate);
+---
+
+<section class="w-full lg:w-1/2 p-8 lg:p-12 bg-white relative overflow-hidden">
+  <div
+    class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
+  >
+  </div>
+  <article class="relative z-10">
+    <div class="text-sm text-gray-500 mb-4">
+      <FormattedDate currentDate={currentDate} />
+    </div>
+
+    <div>
+      <h2 class="text-3xl font-bold mb-8">
+        {data[0].title}
+      </h2>
+
+      <p class="space-y-3 prose">
+        {data[0].information}
+      </p>
+    </div>
+
+    <div class="mt-8 flex items-center gap-4 text-slate-600">
+      <a
+        href="#"
+        class="flex bg-white items-center gap-2 px-4 py-2 rounded-lg border border-slate-600 transition duration-300 ease-in-out transform hover:scale-105 will-change-transform"
+      >
+        <Ray />
+        <span class="text-sm font-medium">Otros factos</span>
+      </a>
+    </div>
+
+    <div class="mt-8 border-t border-slate-200 pt-8">
+      <div class="flex items-center gap-2 text-slate-500 text-sm">
+        <Book />
+        <span>Aprende algo nuevo cada día</span>
+      </div>
+    </div>
+  </article>
+</section>
