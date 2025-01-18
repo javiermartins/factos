@@ -6,10 +6,10 @@ export const client = createClient({
     authToken: DB_APP_TOKEN,
 });
 
-export const getData = async (date: any) => {
+export const getData = async (date: string) => {
     const result = await client.execute({
         sql: `SELECT * FROM factos WHERE date = ?`,
         args: [date]
     });
-    return result.rows
+    return result.rows;
 }
