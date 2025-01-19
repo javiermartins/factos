@@ -1,10 +1,11 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
-import db from '@astrojs/db';
 import tailwind from '@astrojs/tailwind';
+import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
-  integrations: [db(), tailwind()],
+  output: 'server',
+  integrations: [tailwind()],
   markdown: {
     remarkPlugins: [],
   },
@@ -13,5 +14,10 @@ export default defineConfig({
       DB_REMOTE_URL: envField.string({ context: 'server', access: 'secret' }),
       DB_APP_TOKEN: envField.string({ context: 'server', access: 'secret' })
     }
-  }
+  },
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true,
+    },
+  }),
 });

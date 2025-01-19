@@ -2,11 +2,13 @@
 import LeftSection from "../components/LeftSection.astro";
 import RightSection from "../components/RightSection.astro";
 import Layout from "../layouts/Layout.astro";
+
+export const prerender = true;
 ---
 
 <Layout>
   <main class="min-h-screen lg:max-h-screen flex flex-col lg:flex-row">
     <LeftSection />
-    <RightSection />
+    <RightSection server:defer />
   </main>
 </Layout>
