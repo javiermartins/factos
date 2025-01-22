@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://factos.pages.dev/sitemap.xml
