@@ -1,0 +1,106 @@
+---
+const { factoTitle, factoInformation } = Astro.props;
+import Speak from "./icons/Speak.astro";
+import Stop from "./icons/Stop.astro";
+---
+
+<div class="mb-2">
+  <button
+    id="speakButton"
+    class="p-2 bg-blue-100 rounded-full"
+    aria-label="Activar voz"
+  >
+    <Speak aria-hidden="true" />
+  </button>
+  <button
+    id="stopButton"
+    class="p-2 bg-red-100 rounded-full"
+    style="display: none;"
+    aria-label="Detener voz"
+  >
+    <Stop aria-hidden="true" />
+  </button>
+</div>
+
+<script define:vars={{ factoTitle, factoInformation }}>
+  function deleteHtml() {
+    var tempDiv = document.createElement("div");
+    tempDiv.innerHTML = factoInformation;
+    return tempDiv.innerText;
+  }
+
+  var informationText = `${factoTitle}.${deleteHtml()}`;
+
+  const speakButton = document.getElementById("speakButton");
+  const stopButton = document.getElementById("stopButton");
+  let voices = [];
+  let defaultVoice = "Google español";
+  let currentUtterance = null;
+
+  function setDefaultVoice() {
+    voices = speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.name.includes(defaultVoice));
+    return voice || voices[0];
+  }
+
+  function toggleSpeech() {
+    if (currentUtterance) {
+      stopSpeech();
+    } else {
+      speakText();
+    }
+  }
+
+  function speakText() {
+    const text = informationText.trim();
+    if (text !== "") {
+      const sentences = text.match(/[^.?!]+[.?!]+/g) || [text];
+      let index = 0;
+
+      function speakSentence() {
+        if (index < sentences.length) {
+          const utterance = new SpeechSynthesisUtterance(sentences[index]);
+          utterance.voice = setDefaultVoice();
+          utterance.rate = 1;
+          utterance.pitch = 1;
+          utterance.volume = 1;
+          utterance.onend = () => {
+            index++;
+            speakSentence();
+          };
+
+          currentUtterance = utterance;
+          window.speechSynthesis.speak(utterance);
+        } else {
+          currentUtterance = null;
+          stopButton.style.display = "none";
+          speakButton.style.display = "block";
+        }
+      }
+
+      stopButton.style.display = "block";
+      speakButton.style.display = "none";
+      speakSentence();
+    } else {
+      alert("Error al reproducir el texto para hablar.");
+    }
+  }
+
+  function stopSpeech() {
+    if (currentUtterance) {
+      window.speechSynthesis.cancel();
+      currentUtterance = null;
+      stopButton.style.display = "none";
+      speakButton.style.display = "block";
+    }
+  }
+
+  speakButton.addEventListener("click", toggleSpeech);
+  stopButton.addEventListener("click", stopSpeech);
+
+  window.addEventListener("beforeunload", stopSpeech);
+
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = setDefaultVoice;
+  }
+</script>

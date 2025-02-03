@@ -1,6 +1,7 @@
 ---
 import { getData } from "../../db/client";
 import FormattedDate from "./FormattedDate.astro";
+import TextToSpeech from "./TextToSpeech.astro";
 import Ray from "./icons/Ray.astro";
 import Book from "./icons/Book.astro";
 import AlertCircle from "./icons/AlertCircle.astro";
@@ -10,6 +11,7 @@ const date = new Date();
 const currentDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 const data: any[] = await getData(currentDate);
+const factoInformation = marked.parse(data[0].information);
 ---
 
 <section class="w-full lg:w-3/5 p-8 lg:p-12 bg-white relative overflow-auto">
@@ -24,10 +26,11 @@ const data: any[] = await getData(currentDate);
 
     {
       data[0] ? (
+        <TextToSpeech factoTitle={data[0].title} factoInformation={factoInformation}/>
         <div class="prose">
           <h2 class="text-3xl font-bold mb-8">{data[0].title}</h2>
 
-          <p set:html={marked.parse(data[0].information)} />
+          <p set:html={factoInformation} />
         </div>
       ) : (
         <div class="max-w-2xl space-y-6 mx-auto py-8">
