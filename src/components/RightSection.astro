@@ -26,7 +26,13 @@ const factoInformation = marked.parse(data[0].information);
 
     {
       data[0] ? (
-        <TextToSpeech factoTitle={data[0].title} factoInformation={factoInformation}/>
+        <div class="flex items-center mb-2">
+          <TextToSpeech factoTitle={data[0].title} factoInformation={factoInformation}/>
+          <span class={`ml-4 py-1 px-2 rounded-full border`}
+          style={`color: ${data[0].categoryColor};border-color: ${data[0].categoryColor};`}>
+            {data[0].categoryName}
+            </span>
+        </div>
         <div class="prose">
           <h2 class="text-3xl font-bold mb-8">{data[0].title}</h2>
 

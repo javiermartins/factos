@@ -8,7 +8,10 @@ export const client = createClient({
 
 export const getData = async (date: string) => {
     const result = await client.execute({
-        sql: `SELECT * FROM factos WHERE date = ?`,
+        sql: `SELECT fac.*, cat.name AS categoryName, cat.color AS categoryColor 
+        FROM factos fac 
+        LEFT JOIN categories cat ON cat.ID = fac.id_category 
+        WHERE date = ?`,
         args: [date]
     });
     return result.rows;
