@@ -14,7 +14,7 @@ const data: any[] = await getData(currentDate);
 const factoInformation = marked.parse(data[0]?.information ? data[0].information : '');
 ---
 
-<section class="w-full lg:w-3/5 p-8 lg:p-12 bg-white relative overflow-auto">
+<section class="flex justify-center lg:justify-start w-full lg:w-3/5 p-8 lg:p-12 bg-white relative overflow-auto">
   <div
     class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
   >
