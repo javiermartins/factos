@@ -24,73 +24,106 @@ import Stop from "./icons/Stop.astro";
   function deleteHtml() {
     var tempDiv = document.createElement("div");
     tempDiv.innerHTML = factoInformation;
-    return tempDiv.innerText;
+    return tempDiv.textContent;
   }
 
   var informationText = `${factoTitle}.${deleteHtml()}`;
 
   const speakButton = document.getElementById("speakButton");
   const stopButton = document.getElementById("stopButton");
-  let voices = [];
-  let defaultVoice = "Google español";
+  const synth = window.speechSynthesis;
   let currentUtterance = null;
+  let session = 0;
 
-  function setDefaultVoice() {
-    voices = speechSynthesis.getVoices();
-    const voice = voices.find((v) => v.name.includes(defaultVoice));
-    return voice || voices[0];
+  const norm = (l) => (l || "").toLowerCase().replace("_", "-");
+
+  // Orden de preferencia: Google español (Chrome) > voces españolas de alta
+  // calidad del sistema (Microsoft/Apple/Android) > es-ES > cualquier es-* .
+  function pickVoice() {
+    const voices = synth.getVoices().filter((v) => norm(v.lang).startsWith("es"));
+    if (!voices.length) return null;
+    const score = (v) => {
+      const lang = norm(v.lang);
+      let s = 0;
+      if (/google/i.test(v.name) && lang === "es-es") s += 100;
+      else if (/google/i.test(v.name)) s += 80;
+      if (/natural|online|neural|premium|enhanced|mejorada/i.test(v.name)) s += 60;
+      if (/monica|mónica|helena|laura|paulina|jorge|diego/i.test(v.name)) s += 20;
+      if (lang === "es-es") s += 30;
+      else if (lang === "es-mx" || lang === "es-us") s += 15;
+      if (v.localService) s += 5;
+      return s;
+    };
+    return voices.sort((a, b) => score(b) - score(a))[0];
   }
 
   function toggleSpeech() {
-    if (currentUtterance) {
-      stopSpeech();
-    } else {
-      speakText();
-    }
+    if (currentUtterance) stopSpeech();
+    else speakText();
+  }
+
+  function resetButtons() {
+    currentUtterance = null;
+    stopButton.style.display = "none";
+    speakButton.style.display = "block";
   }
 
   function speakText() {
     const text = informationText.trim();
-    if (text !== "") {
-      const sentences = text.match(/[^.?!]+[.?!]+/g) || [text];
-      let index = 0;
-
-      function speakSentence() {
-        if (index < sentences.length) {
-          const utterance = new SpeechSynthesisUtterance(sentences[index]);
-          utterance.voice = setDefaultVoice();
-          utterance.rate = 1;
-          utterance.pitch = 1;
-          utterance.volume = 1;
-          utterance.onend = () => {
-            index++;
-            speakSentence();
-          };
-
-          currentUtterance = utterance;
-          window.speechSynthesis.speak(utterance);
-        } else {
-          currentUtterance = null;
-          stopButton.style.display = "none";
-          speakButton.style.display = "block";
-        }
-      }
-
-      stopButton.style.display = "block";
-      speakButton.style.display = "none";
-      speakSentence();
-    } else {
+    if (!text) {
       alert("Error al reproducir el texto para hablar.");
+      return;
     }
+    if (!synth) {
+      alert("Tu navegador no soporta la lectura en voz alta.");
+      return;
+    }
+
+    const sentences = (text.match(/[^.?!]+[.?!]+|[^.?!]+$/g) || [text])
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const mySession = ++session;
+    let index = 0;
+
+    function speakSentence() {
+      if (mySession !== session) return;
+      if (index >= sentences.length) {
+        resetButtons();
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(sentences[index]);
+      const voice = pickVoice();
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      } else {
+        // Sin voz española explícita: el navegador elegirá una por idioma
+        utterance.lang = "es-ES";
+      }
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.onend = () => {
+        index++;
+        speakSentence();
+      };
+      utterance.onerror = () => {
+        if (mySession === session) resetButtons();
+      };
+      currentUtterance = utterance;
+      synth.speak(utterance);
+    }
+
+    stopButton.style.display = "block";
+    speakButton.style.display = "none";
+    synth.cancel();
+    speakSentence();
   }
 
   function stopSpeech() {
-    if (currentUtterance) {
-      window.speechSynthesis.cancel();
-      currentUtterance = null;
-      stopButton.style.display = "none";
-      speakButton.style.display = "block";
-    }
+    session++;
+    if (synth) synth.cancel();
+    resetButtons();
   }
 
   speakButton.addEventListener("click", toggleSpeech);
@@ -98,7 +131,6 @@ import Stop from "./icons/Stop.astro";
 
   window.addEventListener("beforeunload", stopSpeech);
 
-  if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = setDefaultVoice;
-  }
+  // Algunos navegadores cargan las voces de forma asíncrona
+  if (synth) synth.getVoices();
 </script>
