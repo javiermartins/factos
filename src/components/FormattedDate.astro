@@ -16,11 +16,9 @@ const abbreviatedMonths = [
   "Dic",
 ];
 
-let date = new Date(currentDate);
-let day = date.getDate();
-let abbreviatedMonth = abbreviatedMonths[date.getMonth()];
-let year = date.getFullYear();
-let formattedDate = `${day} ${abbreviatedMonth}, ${year}`;
+// currentDate llega como YYYY-MM-DD: se parsea a mano para evitar desfases de zona horaria
+const [year, month, day] = currentDate.split("-").map(Number);
+const formattedDate = `${day} ${abbreviatedMonths[month - 1]}, ${year}`;
 ---
 
 <>

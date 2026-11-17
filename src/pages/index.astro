@@ -2,13 +2,53 @@
 import LeftSection from "../components/LeftSection.astro";
 import RightSection from "../components/RightSection.astro";
 import Layout from "../layouts/Layout.astro";
+import { getData } from "../../db/client";
 
-export const prerender = true;
+// Renderizado en servidor: el facto va dentro del HTML (indexable por Google
+// y AdSense) y la respuesta se cachea en el edge hasta medianoche de Madrid.
+const tz = "Europe/Madrid";
+const now = new Date();
+
+// El servidor corre en UTC: usamos la fecha de España para que el facto
+// cambie a medianoche peninsular y no a las 01:00/02:00.
+const currentDate = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(now); // YYYY-MM-DD
+
+let data: any[] = [];
+let failed = false;
+try {
+  data = await getData(currentDate);
+} catch (error) {
+  failed = true;
+  console.error("Error cargando el facto:", error);
+}
+
+if (failed || !data[0]) {
+  // No cachear errores ni días sin facto
+  Astro.response.headers.set("Cache-Control", "no-store");
+} else {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hourCycle: "h23",
+    })
+      .formatToParts(now)
+      .map((p) => [p.type, Number(p.value)]),
+  );
+  const secondsToMidnight =
+    86400 - (parts.hour * 3600 + parts.minute * 60 + parts.second);
+  Astro.response.headers.set(
+    "Cache-Control",
+    `public, max-age=60, s-maxage=${Math.max(60, secondsToMidnight)}`,
+  );
+}
 ---
 
 <Layout>
   <main class="min-h-screen lg:max-h-screen flex flex-col lg:flex-row">
     <LeftSection />
-    <RightSection server:defer />
+    <RightSection data={data} currentDate={currentDate} />
   </main>
 </Layout>
