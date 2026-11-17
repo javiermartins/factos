@@ -1,0 +1,28 @@
+---
+// Único hueco publicitario. Solo se renderiza si PUBLIC_ADSENSE_SLOT está definido
+// (se obtiene en AdSense > Anuncios > Por unidad de anuncio, tras la aprobación).
+const slot = import.meta.env.PUBLIC_ADSENSE_SLOT;
+---
+
+{
+  slot && (
+    <aside aria-label="Publicidad" class="mt-8">
+      <p class="text-xs uppercase tracking-wide text-slate-400 mb-1">
+        Publicidad
+      </p>
+      <div class="min-h-[280px] w-full max-w-2xl">
+        <ins
+          class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-3278466582992718"
+          data-ad-slot={slot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
+      <script is:inline>
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </aside>
+  )
+}
