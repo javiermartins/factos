@@ -1,20 +1,17 @@
 ---
-import { getData } from "../../db/client";
 import FormattedDate from "./FormattedDate.astro";
 import TextToSpeech from "./TextToSpeech.astro";
+import AdSlot from "./AdSlot.astro";
 import Ray from "./icons/Ray.astro";
 import Book from "./icons/Book.astro";
 import AlertCircle from "./icons/AlertCircle.astro";
 import { marked } from "marked";
 
-const date = new Date();
-const currentDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-const data: any[] = await getData(currentDate);
-const factoInformation = marked.parse(data[0]?.information ? data[0].information : '');
+const { data, currentDate } = Astro.props as { data: any[]; currentDate: string };
+const factoInformation = marked.parse(data[0]?.information ?? "", { async: false }) as string;
 ---
 
-<section class="w-full lg:w-3/5 p-8 lg:p-12 bg-white relative overflow-auto">
+<section class="flex justify-center lg:justify-start w-full lg:w-3/5 p-8 lg:p-12 bg-white relative overflow-auto">
   <div
     class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
   >
@@ -40,7 +37,7 @@ const factoInformation = marked.parse(data[0]?.information ? data[0].information
         <div class="prose">
           <h2 class="text-3xl font-bold mb-8">{data[0].title}</h2>
 
-          <p set:html={factoInformation} />
+          <div set:html={factoInformation} />
         </div>
       ) : (
         <div class="max-w-2xl space-y-6 mx-auto py-8">
@@ -66,11 +63,14 @@ const factoInformation = marked.parse(data[0]?.information ? data[0].information
       </a> -->
     </div>
 
+    <AdSlot />
+
     <div class="mt-8 border-t border-slate-200 pt-8">
       <div class="flex items-center gap-2 text-slate-500 text-sm">
         <Book />
         <span>Aprende algo nuevo cada día</span>
       </div>
+      <a href="/privacidad" class="mt-3 inline-block text-xs text-slate-400 hover:text-slate-600">Privacidad</a>
     </div>
   </article>
 </section>

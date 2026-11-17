@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   output: 'server',
-  site: 'https://factos.pages.dev',
+  site: 'https://factodeldia.com',
   integrations: [tailwind(), sitemap()],
   markdown: {
     remarkPlugins: [],
